@@ -1,12 +1,20 @@
 package storage
 
-
+import (
+	"github.com/servicesys/GoHeadlessCMS/pkg/model"
+)
 
 type ContentStorage interface {
-	SearchContent(strSearch string ) []string
-	GetContent(uuid string) (, error)
-	//CreateContent(ctx context.Context, u User) (string, error)
-	///UpdateContent(ctx context.Context, u User) error
-	//DeleteContent(ctx context.Context, id string) error
+	SearchContent(strSearch string) []model.Content
+	GetContent(uuid string) model.Content
+	GetAllContentByCategory(categoryCod string) []model.Content
+	CreateContent(model.Content) error
+	UpdateContent(model.Content) error
+	DeleteContent(uuid string) error
+	CreateCategory(model.Category) error
+	UpdateCategory(model.Category) error
+	GetAllCategory() ([]model.Category, error)
+	CreateType(model.Type) error
+	UpdateType(model.Type) error
+	GetType(cod string) (model.Type, error)
 }
-
