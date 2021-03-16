@@ -8,7 +8,6 @@ import (
 	"github.com/qri-io/jsonschema"
 	uuid "github.com/satori/go.uuid"
 	"github.com/servicesys/GoHeadlessCMS/pkg/model"
-	//"github.com/servicesys/jsonschema/schema"
 )
 
 type ContentStoragePostgres struct {
@@ -31,12 +30,92 @@ func (contentStorage *ContentStoragePostgres) SearchContent(strSearch string) []
 	panic("implement me")
 }
 
-func (contentStorage *ContentStoragePostgres) GetContent(uuid string) model.Content {
-	panic("implement me")
+func (contentStorage *ContentStoragePostgres) GetContent(uuid string) (model.Content, error) {
+
+	strQuery :=
+		`SELECT     uuid,
+					value,
+	                content_status, 
+					created_on,
+					modified_on,
+                    ct.cod,
+					ct.description,
+					ct.metadata,
+	                cc.cod,
+					cc.description 
+					FROM headless_cms.content_value cv
+					INNER  JOIN headless_cms.content_type ct ON (cv.content_type_cod =ct.cod)
+                    INNER  JOIN headless_cms.content_category cc  ON (cv.content_category_cod =cc.cod)
+				    WHERE uuid=$1;`
+	rows, errQuery := contentStorage.dbConnection.Query(context.Background(), strQuery, uuid)
+	content := model.Content{}
+
+	defer rows.Close()
+	if errQuery != nil {
+		return content, errQuery
+	}
+	for rows.Next() {
+		content.Type = model.Type{}
+		content.Category = model.Category{}
+		rows.Scan(&content.Uuid,
+			&content.Content,
+			&content.Status,
+			&content.CreatedOn,
+			&content.ModifiedOn,
+			&content.Type.Cod,
+			&content.Type.Description,
+			&content.Type.Metadata,
+			&content.Category.Cod,
+			&content.Category.Description)
+	}
+	return content, nil
 }
 
-func (contentStorage *ContentStoragePostgres) GetAllContentByCategory(categoryCod string) []model.Content {
-	panic("implement me")
+func (contentStorage *ContentStoragePostgres) GetAllContentByCategory(categoryCod string) ([]model.Content, error) {
+
+	strQuery :=
+		`SELECT     uuid,
+					value,
+	                content_status, 
+					created_on,
+					modified_on,
+                    ct.cod,
+					ct.description,
+					ct.metadata,
+	                cc.cod,
+					cc.description 
+					FROM headless_cms.content_value cv
+					INNER  JOIN headless_cms.content_type ct ON (cv.content_type_cod =ct.cod)
+                    INNER  JOIN headless_cms.content_category cc  ON (cv.content_category_cod =cc.cod)
+				    WHERE   cc.cod=$1;`
+	rows, errQuery := contentStorage.dbConnection.Query(context.Background(), strQuery, categoryCod)
+
+	contents := make([]model.Content, 0)
+
+	defer rows.Close()
+	if errQuery != nil {
+		return contents, errQuery
+	}
+	for rows.Next() {
+		content := model.Content{}
+		content.Type = model.Type{}
+		content.Category = model.Category{}
+		errScan := rows.Scan(&content.Uuid,
+			&content.Content,
+			&content.Status,
+			&content.CreatedOn,
+			&content.ModifiedOn,
+			&content.Type.Cod,
+			&content.Type.Description,
+			&content.Type.Metadata,
+			&content.Category.Cod,
+			&content.Category.Description)
+		if errScan != nil {
+			return contents, errScan
+		}
+		contents = append(contents, content)
+	}
+	return contents, nil
 }
 
 func validateContent(content model.Content) (model.Content, error) {
@@ -57,11 +136,11 @@ func validateContent(content model.Content) (model.Content, error) {
 	return model.Content{}, nil
 }
 
-func (contentStorage *ContentStoragePostgres) CreateContent(content model.Content) (model.Content, error) {
+func (contentStorage *ContentStoragePostgres) CreateContent(content model.Content) error {
 
-	m, errValidate := validateContent(content)
+	_, errValidate := validateContent(content)
 	if errValidate != nil {
-		return m, errValidate
+		return errValidate
 	}
 	queryInsert := `INSERT INTO headless_cms.content_value(uuid, content_category_cod, 
                     content_type_cod, value, content_status , created_on, modified_on) 
@@ -70,7 +149,7 @@ func (contentStorage *ContentStoragePostgres) CreateContent(content model.Conten
 	content.Uuid = uuid.NewV4().String()
 	err := doExecute(contentStorage.dbConnection, queryInsert, content.Uuid, content.Category.Cod,
 		content.Type.Cod, content.Content, content.Status)
-	return content, err
+	return err
 }
 
 func (contentStorage *ContentStoragePostgres) UpdateContent(content model.Content) error {
@@ -131,6 +210,7 @@ func (contentStorage *ContentStoragePostgres) GetAllCategory() ([]model.Category
 }
 
 func (contentStorage *ContentStoragePostgres) UpdateCategory(category model.Category) error {
+
 	query := `UPDATE headless_cms.content_category SET description = $1 WHERE cod=$2`
 	err := doExecute(contentStorage.dbConnection, query, category.Description, category.Cod)
 	return err
