@@ -6,8 +6,8 @@ import (
 
 type ContentStorage interface {
 	SearchContent(strSearch string) []model.Content
-	GetContent(uuid string) (model.Content,error)
-	GetAllContentByCategory(categoryCod string) ([]model.Content,error)
+	GetContent(uuid string) (model.Content, error)
+	GetAllContentByCategory(categoryCod string) ([]model.Content, error)
 	CreateContent(model.Content) error
 	UpdateContent(model.Content) error
 	DeleteContent(uuid string) error

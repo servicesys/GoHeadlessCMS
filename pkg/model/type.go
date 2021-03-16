@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/qri-io/jsonschema"
 )
 
@@ -14,6 +15,7 @@ type Type struct {
 
 func (mtype Type) Validator(ctx context.Context , jsonBytes []byte) (bool, []string) {
 
+
 	var listErrors = make([]string, 0)
 	rs := &jsonschema.Schema{}
 
@@ -21,6 +23,9 @@ func (mtype Type) Validator(ctx context.Context , jsonBytes []byte) (bool, []str
 		listErrors = append(listErrors, err.Error())
 		return false, listErrors
 	}
+
+
+	fmt.Println( string(jsonBytes))
 	errs, err := rs.ValidateBytes(ctx, jsonBytes)
 	if err != nil {
 		listErrors = append(listErrors, err.Error())
@@ -35,4 +40,13 @@ func (mtype Type) Validator(ctx context.Context , jsonBytes []byte) (bool, []str
 	}
 
 	return true, nil
+}
+
+func (mtype Type) Validate() error {
+
+	//validate schema
+	if err := json.Unmarshal(mtype.Metadata, &jsonschema.Schema{}); err != nil {
+		return err
+	}
+	return nil
 }

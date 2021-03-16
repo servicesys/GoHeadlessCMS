@@ -5,14 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/jackc/pgx/v4"
-	"github.com/qri-io/jsonschema"
 	uuid "github.com/satori/go.uuid"
 	"github.com/servicesys/GoHeadlessCMS/pkg/model"
 )
 
 type ContentStoragePostgres struct {
 	dbConnection *pgx.Conn
-	//jsonValidator schema.JsonSchemaValidator
 }
 
 func NewContentStoragePostgres() ContentStorage {
@@ -20,7 +18,6 @@ func NewContentStoragePostgres() ContentStorage {
 	connection := Connect()
 	contentStoragePostgres := &ContentStoragePostgres{
 		dbConnection: connection,
-		//jsonValidator: schema.JsonSchemaValidatorQri{},
 	}
 
 	return contentStoragePostgres
@@ -118,7 +115,7 @@ func (contentStorage *ContentStoragePostgres) GetAllContentByCategory(categoryCo
 	return contents, nil
 }
 
-func validateContent(content model.Content) (model.Content, error) {
+func validateContent(ctx context.Context, content model.Content) (model.Content, error) {
 	//validate schema
 	if !json.Valid(content.Type.Metadata) {
 		return content, errors.New("SCHEMA INVALID")
@@ -127,18 +124,18 @@ func validateContent(content model.Content) (model.Content, error) {
 		return content, errors.New("Content INVALID")
 	}
 
-	/* @TODO VALIDAR O CONTEUDO COMPATIVEL COM O TYPO
-	ctx := context.TODO()
+	//@TODO VALIDAR O CONTEUDO COMPATIVEL COM O TYPO
 	valid, erroStr := content.Type.Validator(ctx, content.Content)
 	if !valid {
 		return content, errors.New(erroStr[0])
-	}*/
+	}
 	return model.Content{}, nil
 }
 
 func (contentStorage *ContentStoragePostgres) CreateContent(content model.Content) error {
 
-	_, errValidate := validateContent(content)
+	//contextMAp := make(map[string]interface{})
+	_, errValidate := validateContent(context.TODO(), content)
 	if errValidate != nil {
 		return errValidate
 	}
@@ -154,7 +151,7 @@ func (contentStorage *ContentStoragePostgres) CreateContent(content model.Conten
 
 func (contentStorage *ContentStoragePostgres) UpdateContent(content model.Content) error {
 
-	_, errValidate := validateContent(content)
+	_, errValidate := validateContent(context.Background(), content)
 	if errValidate != nil {
 		return errValidate
 	}
@@ -218,8 +215,7 @@ func (contentStorage *ContentStoragePostgres) UpdateCategory(category model.Cate
 
 func (contentStorage *ContentStoragePostgres) CreateType(mtype model.Type) error {
 
-	//validate schema
-	if err := json.Unmarshal(mtype.Metadata, &jsonschema.Schema{}); err != nil {
+	if err := mtype.Validate(); err != nil {
 		return err
 	}
 	queryInsert := `INSERT INTO headless_cms.content_type(cod, metadata, description) VALUES($1, $2, $3);`
@@ -229,7 +225,7 @@ func (contentStorage *ContentStoragePostgres) CreateType(mtype model.Type) error
 
 func (contentStorage *ContentStoragePostgres) UpdateType(mtype model.Type) error {
 
-	if err := json.Unmarshal(mtype.Metadata, &jsonschema.Schema{}); err != nil {
+	if err := mtype.Validate(); err != nil {
 		return err
 	}
 	queryInsert := `UPDATE headless_cms.content_type SET metadata=$1, description=$2 WHERE cod=$3;`
