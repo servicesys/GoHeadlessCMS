@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+        <style> 
+      .tableNameHeading { 
+           margin-top:2em; 
+           margin-bottom:1em; 
+           border-top: 2px solid gray; 
+           border-bottom: 1px solid #C0C0C0; 
+           background-color:#F5F5FF; 
+       } 
+
+      .tableComment{ background-color:#e4efff; margin-bottom:20px;} 
+      .tableDefinition { padding:2px; border-collapse:collapse; margin-top:1em;} 
+
+      .tdTableDefinition { 
+        padding-right:10px; 
+        vertical-align:top; 
+        border-bottom:1px solid #C0C0C0; 
+      } 
+
+      .tdTableHeading { 
+        padding:2px; 
+        font-weight:bold; 
+        vertical-align:top; 
+        border-bottom: 1px solid #C0C0C0; 
+        background-color: #d0dfff; 
+      } 
+      
+      .subTitle { 
+        font-size:115%; 
+        font-variant:small-caps; 
+        font-weight:bold; 
+      } 
+    </style>
+        <title>cms-content - Data Model</title>
+    </head>
+    <body>
+        <center>
+            <h2>cms-content - Data Model</h2>
+        </center>
+        <h3>List of tables</h3>
+        <ul>
+            <li>
+                <a href="#CONTENT_CATEGORY">CONTENT_CATEGORY</a>
+            </li>
+            <li>
+                <a href="#CONTENT_TYPE">CONTENT_TYPE</a>
+            </li>
+            <li>
+                <a href="#CONTENT_VALUE">CONTENT_VALUE</a>
+            </li>
+        </ul>
+        <div class="tableNameHeading">
+            <a style="font-size:175%; font-weight:bold; font-family: monospace;" name="CONTENT_CATEGORY">CONTENT_CATEGORY</a>
+            <p></p>
+        </div>
+        <table class="tableDefinition">
+            <tr>
+                <td class="tdTableHeading" width="15%">Column</td><td class="tdTableHeading" width="12%">Type</td><td class="tdTableHeading" width="3%">PK</td><td class="tdTableHeading" width="5%">Nullable</td><td class="tdTableHeading">Comment</td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">COD</td><td class="tdTableDefinition" nowrap>CHAR(40)</td><td class="tdTableDefinition" nowrap>PK</td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">DESCRIPTION</td><td class="tdTableDefinition" nowrap>VARCHAR(120)</td><td class="tdTableDefinition" nowrap></td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+        </table>
+        <p class="subTitle">References</p>
+        <ul>
+            <li>
+                <a href="#CONTENT_TYPE">CONTENT_TYPE</a>
+            </li>
+        </ul>
+        <div class="tableNameHeading">
+            <a style="font-size:175%; font-weight:bold; font-family: monospace;" name="CONTENT_TYPE">CONTENT_TYPE</a>
+            <p></p>
+        </div>
+        <table class="tableDefinition">
+            <tr>
+                <td class="tdTableHeading" width="15%">Column</td><td class="tdTableHeading" width="12%">Type</td><td class="tdTableHeading" width="3%">PK</td><td class="tdTableHeading" width="5%">Nullable</td><td class="tdTableHeading">Comment</td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">COD</td><td class="tdTableDefinition" nowrap>CHAR(40)</td><td class="tdTableDefinition" nowrap>PK</td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">METADATA</td><td class="tdTableDefinition" nowrap>JSONB</td><td class="tdTableDefinition" nowrap></td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">DESCRIPTION</td><td class="tdTableDefinition" nowrap>VARCHAR(120)</td><td class="tdTableDefinition" nowrap></td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">CONTENT_CATEGORY_COD</td><td class="tdTableDefinition" nowrap>CHAR(40)</td><td class="tdTableDefinition" nowrap></td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+        </table>
+        <p class="subTitle">References</p>
+        <ul>
+            <li>
+                <a href="#CONTENT_VALUE">CONTENT_VALUE</a>
+            </li>
+        </ul>
+        <div class="tableNameHeading">
+            <a style="font-size:175%; font-weight:bold; font-family: monospace;" name="CONTENT_VALUE">CONTENT_VALUE</a>
+            <p></p>
+        </div>
+        <table class="tableDefinition">
+            <tr>
+                <td class="tdTableHeading" width="15%">Column</td><td class="tdTableHeading" width="12%">Type</td><td class="tdTableHeading" width="3%">PK</td><td class="tdTableHeading" width="5%">Nullable</td><td class="tdTableHeading">Comment</td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">UUID</td><td class="tdTableDefinition" nowrap>UUID</td><td class="tdTableDefinition" nowrap>PK</td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">CONTENT_TYPE_COD</td><td class="tdTableDefinition" nowrap>CHAR(40)</td><td class="tdTableDefinition" nowrap></td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">VALUE</td><td class="tdTableDefinition" nowrap>JSONB</td><td class="tdTableDefinition" nowrap></td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">CREATED_ON</td><td class="tdTableDefinition" nowrap>TIMESTAMP</td><td class="tdTableDefinition" nowrap></td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">MODIFIED_ON</td><td class="tdTableDefinition" nowrap>TIMESTAMP</td><td class="tdTableDefinition" nowrap></td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition"></td>
+            </tr>
+            <tr>
+                <td class="tdTableDefinition">CONTENT_STATUS</td><td class="tdTableDefinition" nowrap>CHAR(10)</td><td class="tdTableDefinition" nowrap></td><td class="tdTableDefinition" nowrap>NOT NULL</td><td class="tdTableDefinition">REM - REMOVIDO - PUB - PUBLICADO APR - APROVACAO</td>
+            </tr>
+        </table>
+    </body>
+</html>
