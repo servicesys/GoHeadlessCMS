@@ -7,28 +7,18 @@ import (
 	"os"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "valter"
-	password = "valter"
-	dbname   = "app_sistema"
-)
-
 func Connect() *pgx.Conn {
 
+	config := LoadConfig()
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+		config.Host, config.Port, config.User, config.Password, config.DB)
 
 	db, err := pgx.Connect(context.Background(), psqlInfo)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		panic(err)
 	}
-	fmt.Println("Successfully connected!")
-	fmt.Println(db.Config())
-
 	return db
 
 }

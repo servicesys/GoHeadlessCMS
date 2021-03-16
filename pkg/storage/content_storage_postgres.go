@@ -23,8 +23,66 @@ func NewContentStoragePostgres() ContentStorage {
 	return contentStoragePostgres
 }
 
-func (contentStorage *ContentStoragePostgres) SearchContent(strSearch string) []model.Content {
-	panic("implement me")
+func (contentStorage *ContentStoragePostgres) SearchContent(fields []string, query []string) ([]model.Content, error) {
+
+	if len(fields) != len(query) {
+		return nil, errors.New("SIZE fields and query not the same")
+	}
+	strQuery :=
+		`SELECT     uuid,
+					value,
+	                content_status, 
+					created_on,
+					modified_on,
+                    ct.cod,
+					ct.description,
+					ct.metadata,
+	                cc.cod,
+					cc.description 
+					FROM headless_cms.content_value cv
+					INNER  JOIN headless_cms.content_type ct ON (cv.content_type_cod =ct.cod)
+                    INNER  JOIN headless_cms.content_category cc  ON (cv.content_category_cod =cc.cod)
+				    WHERE 1=1 AND `
+
+	strWhere := "("
+	for i, field := range fields {
+
+		strWhere = strWhere + "value->>'" + field + "' ilike '%" + query[i] + "%' "
+		if i < (len(fields) - 1) {
+			strWhere = strWhere + " OR "
+		}
+	}
+	strWhere = strWhere + ")"
+
+	strQuery = strQuery + strWhere
+	rows, errQuery := contentStorage.dbConnection.Query(context.Background(), strQuery)
+
+	contents := make([]model.Content, 0)
+
+	defer rows.Close()
+	if errQuery != nil {
+		return contents, errQuery
+	}
+	for rows.Next() {
+		content := model.Content{}
+		content.Type = model.Type{}
+		content.Category = model.Category{}
+		errScan := rows.Scan(&content.Uuid,
+			&content.Content,
+			&content.Status,
+			&content.CreatedOn,
+			&content.ModifiedOn,
+			&content.Type.Cod,
+			&content.Type.Description,
+			&content.Type.Metadata,
+			&content.Category.Cod,
+			&content.Category.Description)
+		if errScan != nil {
+			return contents, errScan
+		}
+		contents = append(contents, content)
+	}
+	return contents, nil
 }
 
 func (contentStorage *ContentStoragePostgres) GetContent(uuid string) (model.Content, error) {
@@ -44,6 +102,7 @@ func (contentStorage *ContentStoragePostgres) GetContent(uuid string) (model.Con
 					INNER  JOIN headless_cms.content_type ct ON (cv.content_type_cod =ct.cod)
                     INNER  JOIN headless_cms.content_category cc  ON (cv.content_category_cod =cc.cod)
 				    WHERE uuid=$1;`
+
 	rows, errQuery := contentStorage.dbConnection.Query(context.Background(), strQuery, uuid)
 	content := model.Content{}
 
