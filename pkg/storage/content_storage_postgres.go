@@ -124,7 +124,7 @@ func validateContent(ctx context.Context, content model.Content) (model.Content,
 		return content, errors.New("Content INVALID")
 	}
 
-	//@TODO VALIDAR O CONTEUDO COMPATIVEL COM O TYPO
+	//VALIDAR O CONTEUDO COMPATIVEL COM O TYPE
 	valid, erroStr := content.Type.Validator(ctx, content.Content)
 	if !valid {
 		return content, errors.New(erroStr[0])
@@ -134,7 +134,6 @@ func validateContent(ctx context.Context, content model.Content) (model.Content,
 
 func (contentStorage *ContentStoragePostgres) CreateContent(content model.Content) error {
 
-	//contextMAp := make(map[string]interface{})
 	_, errValidate := validateContent(context.TODO(), content)
 	if errValidate != nil {
 		return errValidate
