@@ -7,7 +7,6 @@ import (
 	"github.com/qri-io/jsonschema"
 	"github.com/servicesys/GoHeadlessCMS/pkg/model"
 	"github.com/servicesys/GoHeadlessCMS/pkg/storage"
-	"go.uber.org/zap"
 	"time"
 )
 
@@ -15,28 +14,20 @@ func main() {
 
 	fmt.Println("TESTANDO")
 
-	sugar := zap.NewExample().Sugar()
-	defer sugar.Sync()
-	sugar.Infow("failed to fetch URL",
-		"url", "http://example.com",
-		"attempt", 3,
-		"backoff", time.Second,
-	)
-	sugar.Infof("failed to fetch URL: %s", "http://example.com")
-
 	contentStorage := storage.NewContentStoragePostgres()
 
 	//testCategory(contentStorage)
 	//testType(contentStorage)
-	//testContent(contentStorage)
+	testContent(contentStorage)
 	//testSchema(contentStorage)
-	testSearch(contentStorage)
+	//testSearch(contentStorage)
 
 }
 
 func testContent(contentStorage storage.ContentStorage) {
+
 	fmt.Println("--------------------")
-	textoJSon := `{ "titulo" : "Este e um texto de exemplo -NOVO" ,
+	textoJSon := `{ "titulo" : "Este e um texto de exemplo -NOVO - ola" ,
 "texto" :  "Corpo do texto texto de exemplo"
 		 }`
 
@@ -86,6 +77,7 @@ func testContent(contentStorage storage.ContentStorage) {
 			Cod:         "TEXTO_EXEMPLO",
 			Description: "",
 		},
+		//Name: "EXEMPLO_2",
 		Content:    []byte(textoJSon),
 		CreatedOn:  time.Time{},
 		ModifiedOn: time.Time{},
@@ -98,36 +90,40 @@ func testContent(contentStorage storage.ContentStorage) {
 	fmt.Println(errorCreate)
 	fmt.Println("--------------------")
 
+	errorDelete := contentStorage.DeleteContent("76d24f2b-299b-43c9-ab8a-bae420366f61")
+	fmt.Println(errorDelete)
 
-		errorDelete := contentStorage.DeleteContent("513265f0-ae9e-4763-afe3-1a42805749ed")
-		fmt.Println(errorDelete)
+	content.Type = model.Type{
+		Cod:         "TYPE",
+		Metadata:    []byte(SCHEMA),
+		Description: "",
+	}
+	content.Uuid = "68bfe91b-6dd0-46fb-8748-cdfa7d1a81be"
+	content.Status = "RM"
+	content.Name = "EXEMPLO_RM"
+	errorUpdate := contentStorage.UpdateContent(content)
+	fmt.Println(errorUpdate)
 
-		content.Type = model.Type{
-			Cod:         "TYPE2",
-			Metadata:    []byte(SCHEMA),
-			Description: "",
+	mcontent, errorGet := contentStorage.GetContent("68bfe91b-6dd0-46fb-8748-cdfa7d1a81be")
+	fmt.Println(errorGet)
+	fmt.Println(mcontent.Category, mcontent.Name, content.Type.Cod)
+
+	contents, err := contentStorage.GetAllContentByCategory("TEXTO_EXEMPLO")
+
+	fmt.Println(err)
+	//fmt.Println(contents[10].Type.Cod)
+	if err == nil {
+		fmt.Println("\nget category-----------")
+		for _, s := range contents {
+
+			fmt.Println(s.Type.Cod, s.Name)
+
 		}
-		content.Uuid = "0d5a1aac-4489-4803-a356-9215ff8a3ea1"
-		content.Status = "RM"
-		errorUpdate := contentStorage.UpdateContent(content)
-		fmt.Println(errorUpdate)
+	}
 
-		mcontent, errorGet := contentStorage.GetContent("513265f0-ae9e-4763-afe3-1a42805749ed")
-		fmt.Println(errorGet)
-		fmt.Println(mcontent.Category)
-
-		contents, err := contentStorage.GetAllContentByCategory("TEXTO_EXEMPLO")
-
-		fmt.Println(err)
-		//fmt.Println(contents[10].Type.Cod)
-		if err == nil {
-			fmt.Println("-----------")
-			for _, s := range contents {
-
-				fmt.Println(s.Type.Cod)
-
-			}
-		}
+	mcontentName, errorName := contentStorage.GetContentByName("EXEMPLO_RM")
+	fmt.Println(errorName)
+	fmt.Println(mcontentName.Category, mcontentName.Name, mcontentName.Type.Cod)
 
 }
 
@@ -168,7 +164,7 @@ func testType(contentStorage storage.ContentStorage) {
 }
 `
 	erroCreate := contentStorage.CreateType(model.Type{
-		Cod:         "TYPE2",
+		Cod:         "TYPE",
 		Metadata:    []byte(schemaTypeRaw),
 		Description: "TIPO PARA DESCREVER TEXO E CORPO DO TEXTO",
 	})
@@ -190,7 +186,7 @@ func testType(contentStorage storage.ContentStorage) {
 func testCategory(contentStorage storage.ContentStorage) {
 
 	error := contentStorage.CreateCategory(model.Category{
-		"TEXTO_EXEMPLO",
+		"TEXTO_BLOG",
 		"CATEGORIA DE TEXTO",
 	})
 
@@ -203,7 +199,7 @@ func testCategory(contentStorage storage.ContentStorage) {
 
 	errorUpdate := contentStorage.UpdateCategory(model.Category{
 		"TEXTO_BLOG",
-		"CATEGORIA DE TEXTO - ALTERADO",
+		"CATEGORIA DE TEXTO BLOG",
 	})
 
 	fmt.Println(errorUpdate)
@@ -259,7 +255,17 @@ func testSchema(contentStorage storage.ContentStorage) {
 
 func testSearch(contentStorage storage.ContentStorage) {
 
-	contents := contentStorage.SearchContent("testo")
+	contents, error := contentStorage.SearchContent([]string{"titulo", "texto"}, []string{"ola", "ola"})
 
+	if error == nil {
+		fmt.Println("\nSearch-----------")
+		for _, s := range contents {
+
+			fmt.Println(s.Type.Cod, s.Name, s.Category.Cod)
+
+		}
+	}
+	//fmt.Println(contents)
+	fmt.Println(error)
 	fmt.Println(len(contents))
 }
